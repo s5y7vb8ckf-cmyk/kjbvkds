@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام كاشير المغسلة الفاخر</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#065f46">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="كاشير المغسلة">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3003/3003984.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #silent-print-frame {
+            position: absolute;
+            width: 0px;
+            height: 0px;
+            left: -9999px;
+            top: -9999px;
+            border: none;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased h-screen flex flex-col md:flex-row overflow-hidden select-none">
+
+    <!-- زر تثبيت التطبيق PWA -->
+    <div id="pwa-install-banner" class="hidden fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto z-50 bg-brand-900 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between space-x-3 space-x-reverse border border-brand-700">
+        <div class="flex items-center space-x-3 space-x-reverse">
+            <i data-lucide="download-cloud" class="w-6 h-6 text-emerald-400"></i>
+            <div>
+                <div class="font-bold text-xs">تثبيت تطبيق الكاشير</div>
+                <div class="text-[10px] text-brand-100">أضف التطبيق لشاشتك الرئيسية</div>
+            </div>
+        </div>
+        <button id="pwa-install-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">تثبيت</button>
+    </div>
+
+    <!-- Sidebar / Navigation (Desktop & Mobile) -->
+    <aside class="w-full md:w-64 bg-brand-800 text-white flex-shrink-0 flex md:flex-col justify-between shadow-xl z-20 order-2 md:order-1 border-t md:border-t-0 border-brand-700">
+        <div class="p-4 hidden md:flex items-center space-x-3 space-x-reverse border-b border-brand-700">
+            <div class="bg-white p-2 rounded-xl text-brand-800 shadow-sm">
+                <i data-lucide="sparkles" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 id="sidebar-store-name" class="font-bold text-lg leading-tight">مغسلة الرداء الناصع</h1>
+                <p class="text-xs text-brand-100">نظام PWA الذكي</p>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <nav class="flex md:flex-col justify-around md:justify-start w-full p-1.5 md:p-4 space-y-0 md:space-y-1">
+            <button onclick="switchTab('pos')" id="btn-pos" class="nav-btn active-nav flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right bg-brand-700 text-white">
+                <i data-lucide="shopping-bag" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">الكاشير</span>
+            </button>
+            <button onclick="switchTab('orders')" id="btn-orders" class="nav-btn flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right text-brand-100 hover:bg-brand-700">
+                <i data-lucide="clock" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">الطلبات</span>
+            </button>
+            <button onclick="switchTab('customers')" id="btn-customers" class="nav-btn flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right text-brand-100 hover:bg-brand-700">
+                <i data-lucide="users" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">العملاء</span>
+            </button>
+            <button onclick="switchTab('inventory')" id="btn-inventory" class="nav-btn flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right text-brand-100 hover:bg-brand-700">
+                <i data-lucide="box" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">المخزون</span>
+            </button>
+            <button onclick="switchTab('reports')" id="btn-reports" class="nav-btn flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right text-brand-100 hover:bg-brand-700">
+                <i data-lucide="line-chart" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">التقارير</span>
+            </button>
+            <button onclick="switchTab('settings')" id="btn-settings" class="nav-btn flex flex-col md:flex-row items-center space-x-0 md:space-x-3 space-x-reverse p-2 md:p-3 rounded-xl transition font-medium w-full text-center md:text-right text-brand-100 hover:bg-brand-700">
+                <i data-lucide="settings" class="w-5 h-5 mb-0.5 md:mb-0"></i>
+                <span class="text-[10px] md:text-sm">الإعدادات</span>
+            </button>
+        </nav>
+
+        <div class="p-4 hidden md:block border-t border-brand-700 text-xs text-brand-100 text-center">
+            PWA Pro Edition v7.0
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col overflow-hidden order-1 md:order-2">
+        <header class="bg-white border-b border-slate-200 p-3 md:p-4 flex justify-between items-center shadow-sm">
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <h2 id="page-title" class="text-base md:text-xl font-bold text-slate-800">نقطة البيع</h2>
+            </div>
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <span class="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    متصل بنظام الطباعة
+                </span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-3 md:p-6 pb-20 md:pb-6" id="app-container">
+            
+            <!-- SECTION 1: POS SYSTEM -->
+            <div id="section-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-full">
+                
+                <!-- Services Area -->
+                <div class="lg:col-span-7 flex flex-col space-y-3">
+                    <div class="flex space-x-2 space-x-reverse overflow-x-auto pb-1 hide-scrollbar">
+                        <button onclick="filterCategory('all')" class="cat-btn bg-brand-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shadow-sm">الكل</button>
+                        <button onclick="filterCategory('wash')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shadow-sm hover:border-brand-500">غسيل وكي</button>
+                        <button onclick="filterCategory('iron')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shadow-sm hover:border-brand-500">كي فقط</button>
+                        <button onclick="filterCategory('dry')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shadow-sm hover:border-brand-500">غسيل جاف</button>
+                        <button onclick="filterCategory('urgent')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shadow-sm hover:border-brand-500">خدمات مستعجلة</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto pr-0.5" id="items-grid"></div>
+                </div>
+
+                <!-- Desktop Invoice Cart (Visible on desktop only) -->
+                <div class="hidden lg:flex lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 flex-col h-[calc(100vh-140px)]">
+                    <div class="p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex-shrink-0">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">بيانات العميل</label>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <select id="cart-customer" class="w-full bg-white border border-slate-200 rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="عميل نقدي">عميل نقدي (افتراضي)</option>
+                            </select>
+                            <button onclick="openAddCustomerModal()" class="bg-brand-100 text-brand-700 p-2 rounded-xl hover:bg-brand-200 transition">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-3 space-y-2" id="cart-items-desktop">
+                        <div class="text-center py-10 text-slate-400 text-sm">السلة فارغة. اختر الخدمات لإضافتها.</div>
+                    </div>
+
+                    <div class="p-3 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl space-y-2 flex-shrink-0">
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-slate-500">
+                                <span>المجموع غير شامل الضريبة:</span>
+                                <span class="cart-subtotal">0.00 ر.س</span>
+                            </div>
+                            <div class="flex justify-between text-slate-500">
+                                <span>ضريبة القيمة المضافة (15%):</span>
+                                <span class="cart-tax">0.00 ر.س</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-sm text-slate-800 pt-1.5 border-t border-slate-200">
+                                <span>الإجمالي شامل الضريبة:</span>
+                                <span class="cart-total text-brand-600 text-base">0.00 ر.س</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">طريقة الدفع</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="setPaymentMethod('Mada')" class="pay-mada-btn active bg-brand-800 text-white py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 space-x-reverse border border-brand-800">
+                                    <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                                    <span>مدى</span>
+                                </button>
+                                <button type="button" onclick="setPaymentMethod('Cash')" class="pay-cash-btn bg-white text-slate-700 py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 space-x-reverse border border-slate-200">
+                                    <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+                                    <span>نقداً</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button onclick="checkout()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-brand-600/30 transition flex items-center justify-center space-x-2 space-x-reverse text-sm">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>تأكيد وطباعة الفاتورة</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Floating Cart Bar -->
+                <div class="lg:hidden fixed bottom-14 left-0 right-0 p-3 bg-white border-t border-slate-200 shadow-2xl z-30 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-semibold">المبلغ الإجمالي (<span id="mobile-cart-count">0</span>)</div>
+                        <div class="text-lg font-black text-brand-700 cart-total">0.00 ر.س</div>
+                    </div>
+                    <button onclick="openMobileCheckoutModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-brand-600/30">
+                        <span>إتمام الفاتورة والدفع</span>
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: ORDERS TRACKING -->
+            <div id="section-orders" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <h3 class="font-bold text-slate-800 text-sm md:text-base">سجل الطلبات والفواتير</h3>
+                        <div class="relative w-full md:w-80">
+                            <i data-lucide="search" class="w-4 h-4 absolute right-3 top-3 text-slate-400"></i>
+                            <input type="text" id="search-orders" onkeyup="searchOrders()" placeholder="بحث برقم الفاتورة أو العميل..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pr-9 pl-4 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs md:text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                                <tr>
+                                    <th class="p-3">رقم الفاتورة</th>
+                                    <th class="p-3">اسم العميل</th>
+                                    <th class="p-3">القطع</th>
+                                    <th class="p-3">الإجمالي</th>
+                                    <th class="p-3">الدفع</th>
+                                    <th class="p-3">الحالة</th>
+                                    <th class="p-3 text-center">تحديث</th>
+                                    <th class="p-3 text-center">طباعة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: CUSTOMERS -->
+            <div id="section-customers" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <input type="text" id="search-customer" onkeyup="searchCustomers()" placeholder="بحث باسم العميل أو الجوال..." class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs md:text-sm w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button onclick="openAddCustomerModal()" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> إضافة عميل جديد
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-right text-xs md:text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                            <tr>
+                                <th class="p-3">اسم العميل</th>
+                                <th class="p-3">رقم الجوال</th>
+                                <th class="p-3">الفواتير</th>
+                                <th class="p-3">الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 4: INVENTORY -->
+            <div id="section-inventory" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 text-sm md:text-base">مخزون مواد التنظيف والتغليف</h3>
+                    </div>
+                    <table class="w-full text-right text-xs md:text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                            <tr>
+                                <th class="p-3">الصنف</th>
+                                <th class="p-3">الكمية</th>
+                                <th class="p-3">حد التنبيه</th>
+                                <th class="p-3">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 5: FINANCIAL REPORTS -->
+            <div id="section-reports" class="hidden space-y-4 md:space-y-6">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base md:text-lg">التقرير المالي العام للمغسلة</h3>
+                        <p class="text-[10px] md:text-xs text-slate-400">متابعة دقيقة للمبيعات والأرباح والضرائب</p>
+                    </div>
+                    <div class="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto justify-between">
+                        <button onclick="filterReportTime('today')" id="report-filter-today" class="report-filter-btn flex-1 md:flex-none bg-white text-slate-800 font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm">اليوم</button>
+                        <button onclick="filterReportTime('week')" id="report-filter-week" class="report-filter-btn flex-1 md:flex-none text-slate-500 font-medium px-3 py-1.5 rounded-lg text-xs">الأسبوع</button>
+                        <button onclick="filterReportTime('month')" id="report-filter-month" class="report-filter-btn flex-1 md:flex-none text-slate-500 font-medium px-3 py-1.5 rounded-lg text-xs">الشهر</button>
+                        <button onclick="filterReportTime('all')" id="report-filter-all" class="report-filter-btn flex-1 md:flex-none text-slate-500 font-medium px-3 py-1.5 rounded-lg text-xs">الكل</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">المبيعات</div>
+                        <div class="text-lg md:text-2xl font-black text-brand-800" id="report-total-sales">0.00 ر.س</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">صافي الأرباح</div>
+                        <div class="text-lg md:text-2xl font-black text-emerald-600" id="report-net-profit">0.00 ر.س</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">الضريبة (15%)</div>
+                        <div class="text-lg md:text-2xl font-black text-amber-600" id="report-total-vat">0.00 ر.س</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">عدد الفواتير</div>
+                        <div class="text-lg md:text-2xl font-black text-slate-800" id="report-orders-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: SETTINGS -->
+            <div id="section-settings" class="hidden space-y-4 max-w-xl">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-4">
+                    <h3 class="font-bold text-base md:text-lg text-slate-800 border-b pb-3">إعدادات بيانات المتجر والفاتورة</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">اسم المتجر / المغسلة</label>
+                        <input type="text" id="setting-store-name" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">الرقم الضريبي (15 رقم)</label>
+                        <input type="text" id="setting-vat-number" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">عنوان المغسلة والمدينة</label>
+                        <input type="text" id="setting-store-address" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">رقم الهاتف التواصل</label>
+                        <input type="text" id="setting-store-phone" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="saveSettings()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-lg transition text-xs md:text-sm">حفظ والتحديث الفوري</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MOBILE FULL-SCREEN CHECKOUT MODAL (صفحة مستقلة لإتمام الدفع في الجوال) -->
+    <div id="modal-mobile-checkout" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex flex-col justify-end lg:hidden">
+        <div class="bg-white rounded-t-3xl max-h-[90vh] flex flex-col w-full p-4 space-y-3 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-brand-600"></i>
+                    <h3 class="font-bold text-base text-slate-800">تفاصيل الفاتورة وإتمام الدفع</h3>
+                </div>
+                <button onclick="closeMobileCheckoutModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Customer Selection -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">العميل</label>
+                <div class="flex space-x-2 space-x-reverse">
+                    <select id="cart-customer-mobile" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs">
+                        <option value="عميل نقدي">عميل نقدي (افتراضي)</option>
+                    </select>
+                    <button onclick="openAddCustomerModal()" class="bg-brand-100 text-brand-700 p-2 rounded-xl">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selected Items List -->
+            <div class="flex-1 overflow-y-auto max-h-48 space-y-2 p-1" id="cart-items-mobile"></div>
+
+            <!-- Financial Summary -->
+            <div class="space-y-1 text-xs border-t border-slate-100 pt-2">
+                <div class="flex justify-between text-slate-500">
+                    <span>المجموع غير شامل:</span>
+                    <span class="cart-subtotal">0.00 ر.س</span>
+                </div>
+                <div class="flex justify-between text-slate-500">
+                    <span>الضريبة (15%):</span>
+                    <span class="cart-tax">0.00 ر.س</span>
+                </div>
+                <div class="flex justify-between font-bold text-sm text-slate-800 pt-1 border-t border-slate-200">
+                    <span>المبلغ الإجمالي شامل الضريبة:</span>
+                    <span class="cart-total text-brand-600">0.00 ر.س</span>
+                </div>
+            </div>
+
+            <!-- Payment Method Choice -->
+            <div>
+                <label class="block text-[10px] font-semibold text-slate-500 mb-1">طريقة الدفع</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="setPaymentMethod('Mada')" class="pay-mada-btn active bg-brand-800 text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 space-x-reverse border border-brand-800">
+                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                        <span>مدى</span>
+                    </button>
+                    <button type="button" onclick="setPaymentMethod('Cash')" class="pay-cash-btn bg-white text-slate-700 py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 space-x-reverse border border-slate-200">
+                        <i data-lucide="banknote" class="w-4 h-4"></i>
+                        <span>نقداً</span>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="checkout()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 space-x-reverse text-sm">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                <span>تأكيد وطباعة الفاتورة</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- IFRAME مخفي للطباعة -->
+    <iframe id="silent-print-frame"></iframe>
+
+    <!-- MODAL: ADD CUSTOMER -->
+    <div id="modal-customer" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-lg text-slate-800">إضافة عميل جديد</h3>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">اسم العميل</label>
+                <input type="text" id="new-cust-name" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">رقم الجوال</label>
+                <input type="tel" id="new-cust-phone" placeholder="05xxxxxxxx" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+            <div class="flex justify-end space-x-2 space-x-reverse pt-2">
+                <button onclick="closeModal('modal-customer')" class="px-4 py-2 text-sm rounded-xl border border-slate-200 text-slate-600">إلغاء</button>
+                <button onclick="saveCustomer()" class="px-4 py-2 text-sm rounded-xl bg-brand-600 text-white font-semibold">حفظ العميل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Engine -->
+    <script>
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('pwa-install-banner').classList.remove('hidden');
+        });
+
+        document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('pwa-install-banner').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('PWA Service Worker Registered:', reg.scope))
+                    .catch(err => console.log('Service Worker Failed:', err));
+            });
+        }
+
+        let storeSettings = JSON.parse(localStorage.getItem('laundry_settings')) || {
+            name: "مغسلة الرداء الناصع",
+            vat: "300123456700003",
+            address: "خميس مشيط، المملكة العربية السعودية",
+            phone: "0500000000"
+        };
+
+        let services = [
+            { id: 1, name: 'ثوب / قميص', category: 'wash', price: 6 },
+            { id: 2, name: 'ثوب / قميص', category: 'iron', price: 3 },
+            { id: 3, name: 'بدلة رجالية', category: 'dry', price: 25 },
+            { id: 4, name: 'فستان سهرة', category: 'dry', price: 45 },
+            { id: 5, name: 'شماغ / غترة', category: 'wash', price: 4 },
+            { id: 6, name: 'بطانية كبيرة', category: 'wash', price: 30 },
+            { id: 7, name: 'غسيل مستعجل (خلال ساعتين)', category: 'urgent', price: 15 }
+        ];
+
+        let cart = [];
+        let paymentMethod = 'Mada';
+        let reportFilter = 'today';
+        
+        let customers = JSON.parse(localStorage.getItem('laundry_customers')) || [
+            { id: 1, name: 'عميل نقدي', phone: '-', orders: 0, totalSpent: 0 },
+            { id: 2, name: 'أحمد السلمان', phone: '0501234567', orders: 2, totalSpent: 85 }
+        ];
+
+        let orders = JSON.parse(localStorage.getItem('laundry_orders')) || [];
+        let inventory = JSON.parse(localStorage.getItem('laundry_inventory')) || [
+            { id: 1, name: 'مسحوق غسيل (كجم)', qty: 40, alert: 10 },
+            { id: 2, name: 'منعم ملابس (لتر)', qty: 6, alert: 10 },
+            { id: 3, name: 'أكياس تغليف ثياب', qty: 180, alert: 50 }
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            loadSettingsToUI();
+            renderServices('all');
+            renderCart();
+            renderCustomerSelect();
+            renderOrders(orders);
+            renderCustomersTable();
+            renderInventory();
+            updateReports();
+        });
+
+        function loadSettingsToUI() {
+            document.getElementById('sidebar-store-name').innerText = storeSettings.name;
+            document.getElementById('setting-store-name').value = storeSettings.name;
+            document.getElementById('setting-vat-number').value = storeSettings.vat;
+            document.getElementById('setting-store-address').value = storeSettings.address;
+            document.getElementById('setting-store-phone').value = storeSettings.phone;
+        }
+
+        function saveSettings() {
+            storeSettings.name = document.getElementById('setting-store-name').value;
+            storeSettings.vat = document.getElementById('setting-vat-number').value;
+            storeSettings.address = document.getElementById('setting-store-address').value;
+            storeSettings.phone = document.getElementById('setting-store-phone').value;
+
+            localStorage.setItem('laundry_settings', JSON.stringify(storeSettings));
+            loadSettingsToUI();
+            alert('تم حفظ إعدادات المتجر والفاتورة بنجاح!');
+        }
+
+        function switchTab(tab) {
+            ['pos', 'orders', 'customers', 'inventory', 'reports', 'settings'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).classList.remove('bg-brand-700', 'text-white');
+                document.getElementById(`btn-${t}`).classList.add('text-brand-100');
+            });
+
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.getElementById(`btn-${tab}`).classList.add('bg-brand-700', 'text-white');
+
+            const titles = {
+                pos: 'نقطة البيع',
+                orders: 'متابعة الفواتير والطلبات',
+                customers: 'سجل العملاء',
+                inventory: 'مخزون المستلزمات',
+                reports: 'التقارير المالية والأرباح',
+                settings: 'إعدادات المتجر والفاتورة'
+            };
+            document.getElementById('page-title').innerText = titles[tab];
+        }
+
+        function renderServices(cat) {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+            const filtered = cat === 'all' ? services : services.filter(s => s.category === cat);
+            
+            filtered.forEach(s => {
+                grid.innerHTML += `
+                    <div onclick="addToCart(${s.id})" class="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 hover:border-brand-500 shadow-sm active:scale-95 cursor-pointer transition flex flex-col justify-between h-24 md:h-28">
+                        <div class="font-bold text-slate-800 text-xs md:text-sm">${s.name}</div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-[9px] md:text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">${getCatName(s.category)}</span>
+                            <span class="font-extrabold text-brand-600 text-sm md:text-base">${s.price} ر.س</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function getCatName(cat) {
+            if(cat==='wash') return 'غسيل وكي';
+            if(cat==='iron') return 'كي فقط';
+            if(cat==='urgent') return 'مستعجل';
+            return 'غسيل جاف';
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('bg-brand-600', 'text-white');
+                b.classList.add('bg-white', 'text-slate-600', 'border');
+            });
+            event.target.classList.add('bg-brand-600', 'text-white');
+            renderServices(cat);
+        }
+
+        function addToCart(id) {
+            const item = services.find(s => s.id === id);
+            const existing = cart.find(c => c.id === id);
+            if(existing) {
+                existing.qty++;
+            } else {
+                cart.push({...item, qty: 1});
+            }
+            renderCart();
+        }
+
+        function updateQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) {
+                    cart = cart.filter(c => c.id !== id);
+                }
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const desktopContainer = document.getElementById('cart-items-desktop');
+            const mobileContainer = document.getElementById('cart-items-mobile');
+            const totalCount = cart.reduce((sum, c) => sum + c.qty, 0);
+
+            document.getElementById('mobile-cart-count').innerText = totalCount;
+
+            if(cart.length === 0) {
+                const emptyHTML = `<div class="text-center py-8 text-slate-400 text-xs md:text-sm">السلة فارغة. اختر الخدمات لإضافتها.</div>`;
+                desktopContainer.innerHTML = emptyHTML;
+                mobileContainer.innerHTML = emptyHTML;
+                updateTotals(0);
+                return;
+            }
+
+            let cartHtml = '';
+            let subtotal = 0;
+            cart.forEach(c => {
+                const itemTotal = c.price * c.qty;
+                subtotal += itemTotal;
+                cartHtml += `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">${c.name}</div>
+                            <div class="text-[10px] text-slate-400">${c.price} ر.س × ${c.qty}</div>
+                        </div>
+                        <div class="flex items-center space-x-1.5 space-x-reverse">
+                            <button onclick="updateQty(${c.id}, -1)" class="w-6 h-6 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">-</button>
+                            <span class="text-xs font-bold text-slate-700 px-1">${c.qty}</span>
+                            <button onclick="updateQty(${c.id}, 1)" class="w-6 h-6 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            desktopContainer.innerHTML = cartHtml;
+            mobileContainer.innerHTML = cartHtml;
+            updateTotals(subtotal);
+        }
+
+        function updateTotals(subtotal) {
+            const tax = subtotal * 0.15;
+            const total = subtotal + tax;
+
+            document.querySelectorAll('.cart-subtotal').forEach(e => e.innerText = subtotal.toFixed(2) + ' ر.س');
+            document.querySelectorAll('.cart-tax').forEach(e => e.innerText = tax.toFixed(2) + ' ر.س');
+            document.querySelectorAll('.cart-total').forEach(e => e.innerText = total.toFixed(2) + ' ر.س');
+        }
+
+        function openMobileCheckoutModal() {
+            if(cart.length === 0) return alert('السلة فارغة، يرجى اختيار خدمات أولاً');
+            document.getElementById('modal-mobile-checkout').classList.remove('hidden');
+        }
+
+        function closeMobileCheckoutModal() {
+            document.getElementById('modal-mobile-checkout').classList.add('hidden');
+        }
+
+        function setPaymentMethod(method) {
+            paymentMethod = method;
+            document.querySelectorAll('.pay-mada-btn, .pay-cash-btn').forEach(b => {
+                b.classList.remove('bg-brand-800', 'text-white');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            if(method === 'Mada') {
+                document.querySelectorAll('.pay-mada-btn').forEach(b => {
+                    b.classList.add('bg-brand-800', 'text-white');
+                });
+            } else {
+                document.querySelectorAll('.pay-cash-btn').forEach(b => {
+                    b.classList.add('bg-brand-800', 'text-white');
+                });
+            }
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert('يرجى إضافة خدمات إلى السلة أولاً');
+
+            const isMobileView = window.innerWidth < 1024;
+            const customerSelectId = isMobileView ? 'cart-customer-mobile' : 'cart-customer';
+            const customerName = document.getElementById(customerSelectId).value;
+
+            const subtotal = cart.reduce((sum, c) => sum + (c.price * c.qty), 0);
+            const tax = subtotal * 0.15;
+            const total = subtotal + tax;
+            const totalPieces = cart.reduce((sum, c) => sum + c.qty, 0);
+
+            const newOrder = {
+                id: 1000 + orders.length + 1,
+                customer: customerName,
+                items: [...cart],
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                pieces: totalPieces,
+                payment: paymentMethod,
+                status: 'قيد الغسيل',
+                date: new Date().toISOString()
+            };
+
+            orders.unshift(newOrder);
+            localStorage.setItem('laundry_orders', JSON.stringify(orders));
+
+            executeSilentPrint(newOrder);
+
+            cart = [];
+            renderCart();
+            renderOrders(orders);
+            updateReports();
+            closeMobileCheckoutModal();
+        }
+
+        function generateZatcaTlvBase64(seller, vat, timestamp, total, vatAmount) {
+            function getTlv(tag, value) {
+                const encoder = new TextEncoder();
+                const valueBytes = encoder.encode(value);
+                const tlv = new Uint8Array(2 + valueBytes.length);
+                tlv[0] = tag;
+                tlv[1] = valueBytes.length;
+                tlv.set(valueBytes, 2);
+                return tlv;
+            }
+
+            const tlv1 = getTlv(1, seller);
+            const tlv2 = getTlv(2, vat);
+            const tlv3 = getTlv(3, timestamp);
+            const tlv4 = getTlv(4, total.toString());
+            const tlv5 = getTlv(5, vatAmount.toString());
+
+            const totalLength = tlv1.length + tlv2.length + tlv3.length + tlv4.length + tlv5.length;
+            const combined = new Uint8Array(totalLength);
+            
+            let offset = 0;
+            [tlv1, tlv2, tlv3, tlv4, tlv5].forEach(arr => {
+                combined.set(arr, offset);
+                offset += arr.length;
+            });
+
+            let binary = '';
+            for (let i = 0; i < combined.byteLength; i++) {
+                binary += String.fromCharCode(combined[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function executeSilentPrint(order) {
+            const formattedDate = new Date(order.date).toLocaleString('ar-SA');
+            const zatcaBase64 = generateZatcaTlvBase64(
+                storeSettings.name,
+                storeSettings.vat,
+                order.date,
+                order.total.toFixed(2),
+                order.tax.toFixed(2)
+            );
+
+            let itemsHtml = '';
+            order.items.forEach(i => {
+                itemsHtml += '<tr><td style="padding:2px;">' + i.name + '</td><td style="text-align:center;padding:2px;">' + i.qty + '</td><td style="text-align:left;padding:2px;">' + ((i.price * i.qty) * 1.15).toFixed(2) + ' ر.س</td></tr>';
+            });
+
+            let workshopItemsHtml = '';
+            order.items.forEach(i => {
+                workshopItemsHtml += '<div style="border-bottom:1px dashed #000;padding-bottom:2px;margin-bottom:2px;"><div style="font-weight:bold;">' + i.name + ' - (' + i.qty + ' قطعة)</div><div style="font-size:8px;">القسم: ' + getCatName(i.category) + '</div></div>';
+            });
+
+            const printHTML = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>Print</title><style>@page { size: auto; margin: 0mm; } body{font-family:Courier New,monospace;margin:0;padding:5mm;width:78mm;color:#000;background:#fff;direction:rtl}.page-break{page-break-after:always;break-after:page}.receipt-box{padding:2px;margin:auto}.text-center{text-align:center}.bold{font-weight:bold}table{width:100%;border-collapse:collapse;font-size:9px;margin-top:4px}</style></head><body>' +
+                '<div class="receipt-box page-break"><div class="text-center"><h2 style="font-size:13px;margin:0;">' + storeSettings.name + '</h2><p style="font-size:8px;margin:2px 0;">' + storeSettings.address + ' - هاتف: ' + storeSettings.phone + '</p><p style="font-size:10px;font-weight:bold;margin:2px 0;">فاتورة ضريبية مبسطة</p><p style="font-size:9px;margin:0;">الرقم الضريبي: ' + storeSettings.vat + '</p><p style="border-bottom:1px solid #000;padding-bottom:2px;margin:4px 0;" class="bold">*** نسخة العميل ***</p></div>' +
+                '<div style="font-size:9px;"><div>رقم الفاتورة: <span class="bold">#' + order.id + '</span></div><div>التاريخ: ' + formattedDate + '</div><div>العميل: ' + order.customer + '</div><div>طريقة الدفع: ' + (order.payment === 'Mada' ? 'مدى (شبكة)' : 'نقداً') + '</div></div>' +
+                '<table><thead><tr style="border-bottom:1px solid #000;background:#eee;"><th style="text-align:right;">الخدمة</th><th style="text-align:center;">العدد</th><th style="text-align:left;">شامل</th></tr></thead><tbody>' + itemsHtml + '</tbody></table>' +
+                '<div style="font-size:9px;border-top:1px solid #000;margin-top:4px;padding-top:2px;"><div style="display:flex;justify-content:space-between;"><span>غير شامل:</span><span>' + order.subtotal.toFixed(2) + ' ر.س</span></div><div style="display:flex;justify-content:space-between;"><span>الضريبة (15%):</span><span>' + order.tax.toFixed(2) + ' ر.س</span></div><div style="display:flex;justify-content:space-between;font-weight:bold;"><span>الإجمالي النهائي:</span><span>' + order.total.toFixed(2) + ' ر.س</span></div></div>' +
+                '<div class="text-center" style="margin-top:6px;"><div id="qrcode" style="display:inline-block;"></div></div></div>' +
+                '<div class="receipt-box"><div class="text-center"><h2 style="font-size:13px;margin:0;">' + storeSettings.name + '</h2><p style="border-bottom:1px solid #000;padding-bottom:2px;margin:4px 0;" class="bold">*** نسخة التشغيل والتعليق ***</p></div>' +
+                '<div style="font-size:9px;"><div>رقم الفاتورة: <span class="bold">#' + order.id + '</span></div><div>العميل: <span class="bold">' + order.customer + '</span></div></div>' +
+                '<div style="border-bottom:1px solid #000;margin:4px 0;"></div><div style="font-size:9px;">' + workshopItemsHtml + '</div>' +
+                '<div style="border-bottom:1px solid #000;margin:4px 0;"></div><div class="text-center bold" style="font-size:11px;">إجمالي القطع: ' + order.pieces + ' قطعة</div></div>' +
+                '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>' +
+                '<script>new QRCode(document.getElementById("qrcode"),{text:"' + zatcaBase64 + '",width:80,height:80});setTimeout(function(){window.focus();window.print();},200);<\/script></body></html>';
+
+            const iframe = document.getElementById('silent-print-frame');
+            const iframeDoc = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+            iframeDoc.document.open();
+            iframeDoc.document.write(printHTML);
+            iframeDoc.document.close();
+        }
+
+        function renderOrders(listToRender) {
+            const tbody = document.getElementById('orders-table-body');
+            tbody.innerHTML = '';
+            if(listToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">لا توجد نتائج مطابقة للبحث.</td></tr>`;
+                return;
+            }
+            listToRender.forEach(o => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                        <td class="p-3 font-bold">#${o.id}</td>
+                        <td class="p-3">${o.customer}</td>
+                        <td class="p-3 font-bold">${o.pieces} قطعة</td>
+                        <td class="p-3 font-bold text-brand-600">${o.total.toFixed(2)} ر.س</td>
+                        <td class="p-3">${o.payment === 'Mada' ? 'مدى' : 'نقدي'}</td>
+                        <td class="p-3">${getStatusBadge(o.status)}</td>
+                        <td class="p-3 text-center">
+                            <select onchange="updateOrderStatus(${o.id}, this.value)" class="bg-slate-100 text-[10px] md:text-xs border border-slate-200 rounded-lg p-1">
+                                <option value="قيد الغسيل" ${o.status==='قيد الغسيل'?'selected':''}>قيد الغسيل</option>
+                                <option value="جاهز للتسليم" ${o.status==='جاهز للتسليم'?'selected':''}>جاهز للتسليم</option>
+                                <option value="تم التسليم" ${o.status==='تم التسليم'?'selected':''}>تم التسليم</option>
+                            </select>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="reprintOrder(${o.id})" class="text-slate-500 hover:text-brand-600 p-1">
+                                <i data-lucide="printer" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function searchOrders() {
+            const query = document.getElementById('search-orders').value.trim().toLowerCase();
+            const filtered = orders.filter(o => 
+                o.id.toString().includes(query) || 
+                o.customer.toLowerCase().includes(query)
+            );
+            renderOrders(filtered);
+        }
+
+        function getStatusBadge(status) {
+            if(status === 'قيد الغسيل') return `<span class="bg-amber-100 text-amber-800 text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded-full">قيد الغسيل</span>`;
+            if(status === 'جاهز للتسليم') return `<span class="bg-blue-100 text-blue-800 text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded-full">جاهز للتسليم</span>`;
+            return `<span class="bg-slate-100 text-slate-700 text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded-full">تم التسليم</span>`;
+        }
+
+        function updateOrderStatus(id, newStatus) {
+            const order = orders.find(o => o.id === id);
+            if(order) {
+                order.status = newStatus;
+                localStorage.setItem('laundry_orders', JSON.stringify(orders));
+                renderOrders(orders);
+            }
+        }
+
+        function reprintOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if(order) {
+                executeSilentPrint(order);
+            }
+        }
+
+        function renderCustomerSelect() {
+            const selects = [document.getElementById('cart-customer'), document.getElementById('cart-customer-mobile')];
+            selects.forEach(select => {
+                if(select) {
+                    select.innerHTML = '';
+                    customers.forEach(c => {
+                        select.innerHTML += `<option value="${c.name}">${c.name} (${c.phone})</option>`;
+                    });
+                }
+            });
+        }
+
+        function renderCustomersTable() {
+            const tbody = document.getElementById('customers-table-body');
+            tbody.innerHTML = '';
+            customers.forEach(c => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-3 font-semibold text-slate-800">${c.name}</td>
+                        <td class="p-3">${c.phone}</td>
+                        <td class="p-3">${c.orders}</td>
+                        <td class="p-3 font-bold text-brand-600">${c.totalSpent.toFixed(2)} ر.س</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openAddCustomerModal() {
+            document.getElementById('modal-customer').classList.remove('hidden');
+            document.getElementById('modal-customer').classList.add('flex');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('new-cust-name').value;
+            const phone = document.getElementById('new-cust-phone').value;
+            if(!name || !phone) return alert('يرجى كتابة الاسم ورقم الجوال');
+
+            customers.push({ id: Date.now(), name, phone, orders: 0, totalSpent: 0 });
+            localStorage.setItem('laundry_customers', JSON.stringify(customers));
+            renderCustomerSelect();
+            renderCustomersTable();
+            closeModal('modal-customer');
+            document.getElementById('new-cust-name').value = '';
+            document.getElementById('new-cust-phone').value = '';
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            inventory.forEach(i => {
+                const isLow = i.qty <= i.alert;
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-3 font-semibold">${i.name}</td>
+                        <td class="p-3 font-bold">${i.qty}</td>
+                        <td class="p-3 text-slate-400">${i.alert}</td>
+                        <td class="p-3">
+                            ${isLow ? '<span class="bg-red-100 text-red-700 text-[10px] md:text-xs px-2 py-0.5 rounded-full font-bold">منخفض</span>' : '<span class="bg-emerald-100 text-emerald-800 text-[10px] md:text-xs px-2 py-0.5 rounded-full">متوفر</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterReportTime(type) {
+            reportFilter = type;
+            document.querySelectorAll('.report-filter-btn').forEach(b => {
+                b.classList.remove('bg-white', 'text-slate-800', 'font-bold', 'shadow-sm');
+                b.classList.add('text-slate-500', 'font-medium');
+            });
+            document.getElementById(`report-filter-${type}`).classList.add('bg-white', 'text-slate-800', 'font-bold', 'shadow-sm');
+            updateReports();
+        }
+
+        function updateReports() {
+            const now = new Date();
+            let filteredOrders = orders;
+
+            if(reportFilter === 'today') {
+                filteredOrders = orders.filter(o => new Date(o.date).toDateString() === now.toDateString());
+            } else if(reportFilter === 'week') {
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                filteredOrders = orders.filter(o => new Date(o.date) >= weekAgo);
+            } else if(reportFilter === 'month') {
+                filteredOrders = orders.filter(o => {
+                    const d = new Date(o.date);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                });
+            }
+
+            const totalSales = filteredOrders.reduce((sum, o) => sum + o.total, 0);
+            const totalVat = filteredOrders.reduce((sum, o) => sum + o.tax, 0);
+            const netProfit = (totalSales - totalVat) * 0.65;
+            const ordersCount = filteredOrders.length;
+
+            document.getElementById('report-total-sales').innerText = totalSales.toFixed(2) + ' ر.س';
+            document.getElementById('report-net-profit').innerText = netProfit.toFixed(2) + ' ر.س';
+            document.getElementById('report-total-vat').innerText = totalVat.toFixed(2) + ' ر.س';
+            document.getElementById('report-orders-count').innerText = ordersCount;
+        }
+    </script>
+</body>
+</html>
